@@ -13,20 +13,23 @@ const Shop = () => {
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const { count } = useLoaderData();
+  const [currentPage, setCurrentPage] = useState(0);
   const [itemPerPage, setItemPerPage] = useState(10);
   const numberOfPages = Math.ceil(count / itemPerPage);
-  console.log(count);
+  // console.log(count);
 
   //   for (let i = 0; i < numberOfPages; i++) {
   //     pages.push(i);
   //   }
   const pages = [...Array(numberOfPages).keys()];
-  console.log(pages);
+  // console.log(pages);
   useEffect(() => {
-    fetch("http://localhost:5000/products")
+    fetch(
+      `http://localhost:5000/products?page=${currentPage}&size=${itemPerPage}`
+    )
       .then((res) => res.json())
       .then((data) => setProducts(data));
-  }, []);
+  }, [currentPage]);
 
   useEffect(() => {
     const storedCart = getShoppingCart();
@@ -72,7 +75,22 @@ const Shop = () => {
     setCart([]);
     deleteShoppingCart();
   };
-
+  const handleItemPerPageChange = (e) => {
+    const val = parseInt(e.target.value);
+    console.log(val);
+    setItemPerPage(val);
+    setCurrentPage(0);
+  };
+  const handlePrevPage = () => {
+    if (currentPage > 0) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+  const handleNextPage = () => {
+    if (currentPage < pages.length - 1) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
   return (
     <div className="shop-container">
       <div className="products-container">
@@ -92,9 +110,23 @@ const Shop = () => {
         </Cart>
       </div>
       <div className="pagination">
+        <p>current page :{currentPage}</p>
+        <button onClick={handlePrevPage}>Prev</button>
         {pages.map((page) => (
-          <button key={page}>{page}</button>
+          <button
+            onClick={() => setCurrentPage(page)}
+            key={page}
+            className={currentPage === page ? "selected" : undefined}
+          >
+            {page}
+          </button>
         ))}
+        <button onClick={handleNextPage}>Next</button>
+        <select value={itemPerPage} onChange={handleItemPerPageChange} id="">
+          <option value="10"> 10</option>
+          <option value="20"> 20</option>
+          <option value="50"> 50</option>
+        </select>
       </div>
     </div>
   );
